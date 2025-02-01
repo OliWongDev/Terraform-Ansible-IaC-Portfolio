@@ -1,2 +1,4 @@
 /vpc/.terraform
 /vpc/terraform.tfstate
+/vpc/terraform.tfstate.backup
+terraform.tfvars
