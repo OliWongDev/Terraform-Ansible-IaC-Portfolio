@@ -1,0 +1,12 @@
+---
+# Makes sure nginx is installed and latest version
+- name: Ensure Nginx is at the latest version
+  apt:
+    name: nginx
+    state: latest
+    
+# Make sure nginx is running
+- name: Make sure Nginx is running
+  systemd:
+    state: started
+    name: nginx

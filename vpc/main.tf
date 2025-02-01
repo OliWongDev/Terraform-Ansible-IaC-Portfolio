@@ -16,6 +16,16 @@ variable "cloudflare_api_token" {
   type        = string
 }
 
+variable "private_key_path" {
+  description = "Path to private PEM File"
+  type        = string
+}
+
+locals {
+  ssh_user = "ubuntu"
+  key_name = "OliVPCPortfolioKP"
+  private_key_path = private_key_path
+}
 
 provider "aws" {
   region = "ap-southeast-2" # specify your desired region
@@ -138,10 +148,30 @@ resource "aws_instance" "main" {
   instance_type   = "t2.micro"
   subnet_id       = aws_subnet.main.id
   security_groups = [aws_security_group.main.id]
+  key_name = local.key_name
+
+  provisioner "remote-exec" {
+    inline = ["echo 'Wait until SSH is ready'"]
+
+    connection {
+      type = "ssh"
+      user = local.ssh_user
+      private_key = file(local.private_key_path)
+      host = aws_instance.main.public_ip
+    }
+  }
+
+  provisioner "local-exec" {
+    command = "ansible-playbook -i ${aws_instance.main.public_ip}, --private-key ${local.private_key_path} ../ansible/nginx.yaml"
+  }
 
   tags = {
     Name = "OliInstance"
   }
+}
+
+output "nginx_ip" {
+  value = aws_instance.main.public_ip
 }
 
 # Elastic IP
